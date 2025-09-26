@@ -1,0 +1,12 @@
+# Ignorar archivos PDF
+*.pdf
+
+# Ignorar la carpeta .vagrant (usada por Vagrant)
+.vagrant/
+
+# Ignorar la carpeta .kube (configuración de Kubernetes)
+.kube/
+
+# Ignorar archivos de log
+*.log
+logs/

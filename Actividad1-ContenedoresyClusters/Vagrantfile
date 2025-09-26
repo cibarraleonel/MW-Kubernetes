@@ -1,0 +1,40 @@
+Vagrant.configure("2") do |config|
+  ip_address = {
+    docker: "192.168.56.10",
+    podman: "192.168.56.11"
+  }
+
+  {
+    docker: <<-DOCKER_INSTALL,
+      if ! which docker > /dev/null 2>&1; then
+        apt-get update
+        apt-get install -y apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+        apt-get update
+        apt-get install -y docker-ce docker-ce-cli containerd.io
+      fi
+      if ! which docker-compose > /dev/null 2>&1; then
+        curl -sL "https://github.com/docker/compose/releases/download/1.27.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+      fi
+    DOCKER_INSTALL
+    podman: <<-PODMAN_INSTALL,
+      if ! which podman > /dev/null 2>&1; then
+        . /etc/os-release
+        echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/ /" | sudo tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+        curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_${VERSION_ID}/Release.key | sudo apt-key add -
+        sudo apt-get update
+        sudo apt-get -y upgrade
+        sudo apt-get -y install podman
+      fi
+    PODMAN_INSTALL
+  }.each do |vm, provision_script|
+    config.vm.define vm do |instance|
+      instance.vm.box = "ubuntu/bionic64"
+      instance.vm.hostname = "#{vm}-host"
+      instance.vm.provision "shell", inline: provision_script
+      instance.vm.network "private_network", ip: ip_address[vm]
+    end
+  end
+end

@@ -1,0 +1,10 @@
+namespace: actividad-02
+namePrefix: kustomize-
+nameSuffix: "-001"
+commonLabels:
+  app.kubernetes.io/managed-by: kustomize
+
+resources:
+  - nginx.yaml
+  - mysql.yaml
+  - mw-web.yaml
